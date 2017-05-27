@@ -2,20 +2,28 @@
   "name": "short-lnk",
   "private": true,
   "scripts": {
-    "start": "meteor run"
+    "start": "meteor run",
+    "test": "meteor test --driver-package=practicalmeteor:mocha"
   },
   "dependencies": {
     "babel-runtime": "6.18.0",
     "history": "^4.6.1",
     "meteor-node-stubs": "~0.2.0",
     "moment": "^2.18.1",
-    "react": "^15.4.2",
+    "react": "^15.5.4",
+    "react-addons-pure-render-mixin": "^15.5.2",
     "react-dom": "^15.4.2",
-    "react-router": "^4.0.0",
-    "react-router-dom": "^4.0.0",
+    "react-router": "^4.1.1",
+    "react-router-dom": "^4.1.1",
+    "react-test-renderer": "^15.5.4",
     "simpl-schema": "^0.2.3"
   },
   "engines": {
     "node": "4.6.2"
+  },
+  "devDependencies": {
+    "enzyme": "^2.8.2",
+    "expect": "^1.20.2",
+    "react-addons-test-utils": "^15.5.1"
   }
 }
