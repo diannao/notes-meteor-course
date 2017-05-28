@@ -8,7 +8,7 @@ import createBrowserHistory from 'history/createBrowserHistory'
 import { routes, onAuthChange } from '../imports/routes/routes';
 import '../imports/startup/simple-schema-configuration.js';
 
-const history = createBrowserHistory({ forceRefresh: true }); //
+const history = createBrowserHistory(); // { forceRefresh: true }
 
 //window.browserHistory = history;
 
