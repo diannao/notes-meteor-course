@@ -1,76 +1,125 @@
-import {Meteor} from 'meteor/meteor';
+import { Meteor } from 'meteor/meteor';
 import React from 'react';
-import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
-import createBrowserHistory from 'history/createBrowserHistory'
+import { Router, Route, browserHistory } from 'react-router';
 import { Session } from 'meteor/session';
 
-import Login from './../ui/Login';
-import Signup from './../ui/Signup';
-import Dashboard from './../ui/Dashboard';
-import NotFound from './../ui/NotFound';
-
-const history = createBrowserHistory(); // { forceRefresh: true }
-
-//window.browserHistory = history;
-
-const unauthenticatedPages = ['/', '/signup'];
-const authenticatedPages = ['/dashboard'];
-
-const onEnterPublicPage = () => {
-  if(Meteor.userId()) {
-    history.replace('/dashboard');
-  }
-};
-
-const onEnterPrivatePage = () => {
-  console.log("onEnterPrivatePage");
-  if(!Meteor.userId()) {
-    history.replace('/');
-  }
-};
+import Signup from '../ui/Signup';
+import Dashboard from '../ui/Dashboard';
+import NotFound from '../ui/NotFound';
+import Login from '../ui/Login';
 
 const onEnterNotePage = (nextState) => {
-  console.log("onEnterNotePage");
-  if(!Meteor.userId()) {
-    history.replace('/');
-  } else {
-    console.log(nextState);
-  }
+  Session.set('selectedNoteId', nextState.params.id);
 };
 
-export const onAuthChange = (isAuthenticated) => {
-  const pathname = history.location.pathname;
-  console.log(pathname);
-  const isUnauthenticatedPage = unauthenticatedPages.includes(pathname);
-  const isAuthenticatedPage = authenticatedPages.includes(pathname);
-
-  if(isUnauthenticatedPage && isAuthenticated) {
-    console.log('pushing to links');
-    history.replace('/dashboard');
-  } else if(isAuthenticatedPage && !isAuthenticated) {
-    history.replace('/');
-  }
+const onLeaveNotePage = () => {
+  Session.set('selectedNoteId', undefined);
 };
 
+
+export const onAuthChange = (isAuthenticated, currentPagePrivacy) => {
+  const isUnauthenticatedPage = currentPagePrivacy === 'unauth';
+  const isAuthenticatedPage = currentPagePrivacy === 'auth';
+
+  if (isUnauthenticatedPage && isAuthenticated) {
+    browserHistory.replace('/dashboard');
+  } else if (isAuthenticatedPage && !isAuthenticated) {
+    browserHistory.replace('/');
+  }
+};
+export const globalOnChange = (prevState, nextState) => {
+  globalOnEnter(nextState);
+};
+export const globalOnEnter = (nextState) => {
+  const lastRoute = nextState.routes[nextState.routes.length - 1];
+  Session.set('currentPagePrivacy', lastRoute.privacy);
+};
 export const routes = (
-    <Router>
-        <div>
-            <Switch>
-                <Route exact path="/" component={Login} onEnter={onEnterPublicPage}/>
-                <Route path="/signup" component={Signup} onEnter={onEnterPublicPage}/>
-                <Route exact path="/dashboard" component={Dashboard} onEnter={onEnterPrivatePage}/>
-                <Route path="/dashboard/:id" render={(props) => {
-                  console.log("onEnterNotePage");
-                  if(!Meteor.userId()) {
-                    history.replace('/');
-                  } else {
-                    Session.set('selectedNoteId', props.match.params.id);
-                  }
-
-                  return (<Dashboard/>);
-                }}/>
-                <Route component={NotFound}/>
-            </Switch>
-        </div>
-    </Router>
+  <Router history={browserHistory}>
+    <Route onEnter={globalOnEnter} onChange={globalOnChange}>
+      <Route path="/" component={Login} privacy="unauth" />
+      <Route path="/signup" component={Signup} privacy="unauth"/>
+      <Route path="/dashboard" component={Dashboard} privacy="auth"/>
+      <Route path="/dashboard/:id" component={Dashboard} privacy="auth" onEnter={onEnterNotePage} onLeave={onLeaveNotePage}/>
+      <Route path="*" component={NotFound}/>
+    </Route>
+  </Router>
 );
+
+// import {Meteor} from 'meteor/meteor';
+// import React from 'react';
+// import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
+// import createBrowserHistory from 'history/createBrowserHistory'
+// import {Session} from 'meteor/session';
+//
+// import Login from './../ui/Login';
+// import Signup from './../ui/Signup';
+// import Dashboard from './../ui/Dashboard';
+// import NotFound from './../ui/NotFound';
+//
+// const history = createBrowserHistory(); // { forceRefresh: true }
+//
+// //window.browserHistory = history;
+//
+// const unauthenticatedPages = ['/', '/signup'];
+// const authenticatedPages = ['/dashboard'];
+//
+// const onEnterPublicPage = () => {
+//   if (Meteor.userId()) {
+//     history.replace('/dashboard');
+//   }
+// };
+//
+// const onEnterPrivatePage = () => {
+//   console.log("onEnterPrivatePage");
+//   if (!Meteor.userId()) {
+//     history.replace('/');
+//   }
+// };
+//
+// const onEnterNotePage = (nextState) => {
+//   console.log("onEnterNotePage");
+//   if (!Meteor.userId()) {
+//     history.replace('/');
+//   } else {
+//     console.log(nextState);
+//   }
+// };
+//
+// export const onAuthChange = (isAuthenticated) => {
+//   const pathname = history.location.pathname;
+//   console.log(pathname);
+//   const isUnauthenticatedPage = unauthenticatedPages.includes(pathname);
+//   const isAuthenticatedPage = authenticatedPages.includes(pathname);
+//
+//   if (isUnauthenticatedPage && isAuthenticated) {
+//     console.log('pushing to links');
+//     history.replace('/dashboard');
+//   } else if (isAuthenticatedPage && !isAuthenticated) {
+//     history.replace('/');
+//   }
+// };
+//
+// export const routes = (
+//   <Router>
+//     <div>
+//       <Switch>
+//         <Route>
+//           <Route exact path="/" component={Login} privacy="unauth" onEnter={onEnterPublicPage}/>
+//           <Route path="/signup" component={Signup} privacy="unauth" onEnter={onEnterPublicPage}/>
+//           <Route exact path="/dashboard" component={Dashboard} privacy="auth" onEnter={onEnterPrivatePage}/>
+//           <Route path="/dashboard/:id" privacy="auth" render={(props) => {
+//             console.log("onEnterNotePage");
+//             if (!Meteor.userId()) {
+//               history.replace('/');
+//             } else {
+//               Session.set('selectedNoteId', props.match.params.id);
+//             }
+//             return (<Dashboard/>);
+//           }}/>
+//           <Route component={NotFound}/>
+//         </Route>
+//       </Switch>
+//     </div>
+//   </Router>
+// );
