@@ -1,0 +1,6 @@
+1. Create new heroku app
+2. Set up the buildpack for meteor
+3. Set up mongolab db
+4. Configure the ROOT_URL env variable
+5. Set node version in package.json
+6. Commit and deploy (via git push)
